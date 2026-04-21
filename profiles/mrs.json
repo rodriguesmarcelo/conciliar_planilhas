@@ -1,0 +1,145 @@
+{
+  "id": "mrs",
+  "name": "MRS",
+  "mode": "dual",
+  "date_format": "dd/mm/yyyy",
+  "sheets": [
+    {
+      "label": "Cheques",
+      "start_row": 2,
+      "columns": [
+        {
+          "field": "numero_nota",
+          "col_index": 1,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "cnpj",
+          "col_index": 2,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "fornecedor",
+          "col_index": 3,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "numero_cheque",
+          "col_index": 4,
+          "transformations": ["remove_dots", "remove_commas", "to_int"],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "valor",
+          "col_index": 5,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        }
+      ]
+    },
+    {
+      "label": "Extrato",
+      "start_row": 3,
+      "columns": [
+        {
+          "field": "data",
+          "col_index": 1,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": true
+        },
+        {
+          "field": "numero_cheque",
+          "col_index": 2,
+          "transformations": ["remove_dots", "remove_commas", "to_int"],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": true,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "historico",
+          "col_index": 3,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "valor",
+          "col_index": 4,
+          "transformations": ["remove_cd_suffix", "remove_dots", "remove_commas", "absolute_value"],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        }
+      ]
+    }
+  ],
+  "comparison": {
+    "enabled": true,
+    "match_fields": ["numero_cheque"],
+    "one_to_one": true
+  },
+  "output": {
+    "tabs": [
+      {
+        "name": "Dados Conciliados",
+        "source": "conciliados",
+        "columns": [
+          {"header": "NUMERO_NOTA",       "field": "numero_nota",    "fixed_value": null, "transform_output": "strip_after_slash"},
+          {"header": "CPF_CNPJ",          "field": "cnpj",           "fixed_value": null},
+          {"header": "DATA_DO_PAGAMENTO", "field": "data",           "fixed_value": null},
+          {"header": "VALOR_DA_PARCELA",  "field": "valor",          "fixed_value": null},
+          {"header": "JUROS",             "field": null,             "fixed_value": "0"},
+          {"header": "MULTA",             "field": null,             "fixed_value": "0"},
+          {"header": "DESCONTO",          "field": null,             "fixed_value": "0"},
+          {"header": "CONTA_CONTABIL",    "field": null,             "fixed_value": ""}
+        ]
+      },
+      {
+        "name": "Não Conciliados - Cheques",
+        "source": "nao_conciliados_a",
+        "columns": [
+          {"header": "NUMERO_NOTA", "field": "numero_nota",    "fixed_value": null},
+          {"header": "CNPJ",        "field": "cnpj",           "fixed_value": null},
+          {"header": "FORNECEDOR",  "field": "fornecedor",     "fixed_value": null},
+          {"header": "NRCHEQUE",    "field": "numero_cheque",  "fixed_value": null},
+          {"header": "VALOR",       "field": "valor",          "fixed_value": null}
+        ]
+      },
+      {
+        "name": "Não Conciliados - Extrato",
+        "source": "nao_conciliados_b",
+        "columns": [
+          {"header": "DATA",      "field": "data",          "fixed_value": null},
+          {"header": "DOCUMENTO", "field": "numero_cheque", "fixed_value": null},
+          {"header": "HISTORICO", "field": "historico",     "fixed_value": null},
+          {"header": "VALOR",     "field": "valor",         "fixed_value": null}
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "id": "droga_bem",
+  "name": "Droga Bem",
+  "mode": "dual",
+  "date_format": "dd/mm/yyyy",
+  "sheets": [
+    {
+      "label": "Razão",
+      "start_row": 10,
+      "columns": [
+        {
+          "field": "data",
+          "col_index": 1,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": true
+        },
+        {
+          "field": "valor_debito",
+          "col_index": 18,
+          "transformations": [],
+          "multiply_minus_one": true,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "valor_credito",
+          "col_index": 20,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": "valor",
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "historico",
+          "col_index": 6,
+          "transformations": ["remove_newlines", "remove_semicolons"],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        }
+      ]
+    },
+    {
+      "label": "Extrato",
+      "start_row": 11,
+      "columns": [
+        {
+          "field": "data",
+          "col_index": 1,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": true
+        },
+        {
+          "field": "valor",
+          "col_index": 4,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "historico",
+          "col_index": 2,
+          "transformations": ["remove_newlines", "remove_semicolons"],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        }
+      ]
+    }
+  ],
+  "comparison": {
+    "enabled": true,
+    "match_fields": ["data", "valor"],
+    "one_to_one": false
+  },
+  "output": {
+    "tabs": [
+      {
+        "name": "Dados Conciliados",
+        "source": "conciliados",
+        "columns": [
+          {"header": "Data",         "field": "data",         "fixed_value": null},
+          {"header": "Valor",        "field": "valor",        "fixed_value": null},
+          {"header": "Histórico",    "field": "historico",    "fixed_value": null},
+          {"header": "Linha Razão",  "field": "__linha___a",  "fixed_value": null},
+          {"header": "Linha Extrato","field": "__linha___b",  "fixed_value": null}
+        ]
+      },
+      {
+        "name": "Não Conciliados - Razão",
+        "source": "nao_conciliados_a",
+        "columns": [
+          {"header": "Data",        "field": "data",      "fixed_value": null},
+          {"header": "Valor",       "field": "valor",     "fixed_value": null},
+          {"header": "Histórico",   "field": "historico", "fixed_value": null},
+          {"header": "Linha Razão", "field": "__linha__", "fixed_value": null}
+        ]
+      },
+      {
+        "name": "Não Conciliados - Extrato",
+        "source": "nao_conciliados_b",
+        "columns": [
+          {"header": "Data",         "field": "data",      "fixed_value": null},
+          {"header": "Valor",        "field": "valor",     "fixed_value": null},
+          {"header": "Histórico",    "field": "historico", "fixed_value": null},
+          {"header": "Linha Extrato","field": "__linha__", "fixed_value": null}
+        ]
+      }
+    ]
+  }
+}

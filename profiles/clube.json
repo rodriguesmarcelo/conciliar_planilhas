@@ -1,0 +1,92 @@
+{
+  "id": "clube",
+  "name": "Clube",
+  "mode": "single",
+  "date_format": "dd/mm/yyyy",
+  "sheets": [
+    {
+      "label": "Duplicatas Pagas",
+      "start_row": 12,
+      "columns": [
+        {
+          "field": "numero_nota",
+          "col_index": 2,
+          "transformations": ["strip_after_dash", "lstrip_zeros"],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": true,
+          "blank_limit": 20,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "cpf_cnpj",
+          "col_index": 11,
+          "transformations": ["remove_special_chars", "apply_cnpj_mask"],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "data",
+          "col_index": 23,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "valor_parcela",
+          "col_index": 20,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "valor_juros",
+          "col_index": 25,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        },
+        {
+          "field": "valor_desconto",
+          "col_index": 28,
+          "transformations": [],
+          "multiply_minus_one": false,
+          "is_fallback_of": null,
+          "skip_if_empty": false,
+          "skip_if_invalid_date": false
+        }
+      ]
+    }
+  ],
+  "comparison": {
+    "enabled": false,
+    "match_fields": [],
+    "one_to_one": false
+  },
+  "output": {
+    "tabs": [
+      {
+        "name": "Dados Normalizados",
+        "source": "normalizados",
+        "columns": [
+          {"header": "NUMERO_NOTA",       "field": "numero_nota",    "fixed_value": null},
+          {"header": "CPF_CNPJ",          "field": "cpf_cnpj",       "fixed_value": null},
+          {"header": "DATA_DO_PAGAMENTO", "field": "data",           "fixed_value": null},
+          {"header": "VALOR_DA_PARCELA",  "field": "valor_parcela",  "fixed_value": null},
+          {"header": "JUROS",             "field": "valor_juros",    "fixed_value": null},
+          {"header": "MULTA",             "field": null,             "fixed_value": "0"},
+          {"header": "DESCONTO",          "field": "valor_desconto", "fixed_value": null},
+          {"header": "CONTA_CONTABIL",    "field": null,             "fixed_value": ""}
+        ]
+      }
+    ]
+  }
+}
