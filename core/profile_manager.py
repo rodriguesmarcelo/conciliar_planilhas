@@ -2,20 +2,13 @@
 import json
 import os
 import uuid
+from core.utils import get_profiles_dir
 from typing import Optional
-
-
-def _profiles_dir() -> str:
-    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    path = os.path.join(base, "profiles")
-    os.makedirs(path, exist_ok=True)
-    return path
-
 
 def load_all_profiles() -> dict:
     """Retorna dict {id: profile} com todos os perfis da pasta profiles/."""
     profiles = {}
-    folder = _profiles_dir()
+    folder = get_profiles_dir()
     for filename in sorted(os.listdir(folder)):
         if filename.endswith(".json"):
             filepath = os.path.join(folder, filename)
@@ -46,7 +39,7 @@ def save_profile(profile: dict) -> str:
 
     profile_id = profile["id"]
     safe_name = "".join(c if c.isalnum() or c in "-_" else "_" for c in profile_id)
-    filepath = os.path.join(_profiles_dir(), f"{safe_name}.json")
+    filepath = os.path.join(get_profiles_dir(), f"{safe_name}.json")
 
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(profile, f, ensure_ascii=False, indent=2)
@@ -56,7 +49,7 @@ def save_profile(profile: dict) -> str:
 
 def delete_profile(profile_id: str) -> bool:
     """Remove o arquivo JSON do perfil. Retorna True se removido."""
-    folder = _profiles_dir()
+    folder = get_profiles_dir()
     for filename in os.listdir(folder):
         if not filename.endswith(".json"):
             continue

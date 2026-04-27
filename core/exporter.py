@@ -189,7 +189,7 @@ def _write_resumo(wb: Workbook, profile: dict, result: dict,
                   file_a: Optional[str], file_b: Optional[str],
                   executed_at: datetime):
     """Cria a aba 'Resumo' como primeira aba do workbook."""
-    ws = wb.create_sheet(title="Resumo", index=0)
+    ws = wb.create_sheet(title="Resumo")
 
     title_font  = Font(name="Arial", size=14, bold=True, color="1F497D")
     label_font  = Font(name="Arial", size=10, bold=True)
@@ -276,10 +276,7 @@ def export_result(
     # Remover aba padrão criada pelo openpyxl
     wb.remove(wb.active)
 
-    # ── Aba de Resumo (sempre a primeira) ──
-    _write_resumo(wb, profile, result, file_a, file_b, executed_at)
-
-    # ── Abas de dados ──
+    # ── Abas de dados primeiro ──
     if mode == "single":
         tab = next((t for t in output_tabs if t["source"] == "normalizados"), None)
         tab_name = tab["name"] if tab else "Dados Normalizados"
@@ -298,6 +295,9 @@ def export_result(
             tab_name = tab["name"]
             df = source_map.get(source)
             _write_sheet(wb, tab_name, df)
+
+    # ── Aba de Resumo sempre por último ──
+    _write_resumo(wb, profile, result, file_a, file_b, executed_at)
 
     # Salvar
     os.makedirs(os.path.dirname(output_path), exist_ok=True) if os.path.dirname(output_path) else None

@@ -81,6 +81,19 @@ class FileSelector(ctk.CTkFrame):
             filetypes=[("Excel / CSV", "*.xlsx *.xls *.csv"), ("Todos", "*.*")],
         )
         if path:
+            # Detectar .xls (formato legado) e solicitar conversão
+            if path.lower().endswith(".xls"):
+                messagebox.showwarning(
+                    "Formato não suportado — .xls",
+                    "O arquivo selecionado está no formato antigo '.xls'.\n\n"
+                    "Por favor:\n"
+                    "  1. Abra o arquivo no Excel\n"
+                    "  2. Clique em Arquivo → Salvar Como\n"
+                    "  3. Escolha o formato 'Pasta de Trabalho do Excel (*.xlsx)'\n"
+                    "  4. Salve e selecione o novo arquivo aqui.\n\n"
+                    "O sistema aceita apenas arquivos .xlsx ou .csv."
+                )
+                return
             self._path = path
             self._path_var.set(os.path.basename(path))
             self._path_entry.configure(text_color=_TEXT_NORMAL)
@@ -260,6 +273,9 @@ class RunScreen(ctk.CTkFrame):
         self._running = True
         self._exec_btn.configure(state="disabled", text="⏳  Processando...")
         self._hide_result()
+        # Cursor de espera
+        if hasattr(self.master, "set_busy"):
+            self.master.set_busy(True)
 
         thread = threading.Thread(target=self._run_process, daemon=True)
         thread.start()
@@ -297,18 +313,28 @@ class RunScreen(ctk.CTkFrame):
             # 100% — Concluído
             self._set_status("Concluído!", 1.0)
             self._result = result
+            if hasattr(self.master, "set_busy"):
+                self.after(0, lambda: self.master.set_busy(False))
             self.after(0, self._show_result)
 
         except ColumnNotFoundError as e:
             self.after(0, lambda: self._on_error(str(e)))
         except InvalidFileError as e:
             self.after(0, lambda: self._on_error(str(e)))
+        except FileNotFoundError:
+            msg = "O arquivo selecionado não foi encontrado. Selecione novamente."
+            self.after(0, lambda m=msg: self._on_error(m))
+        except PermissionError:
+            msg = "Não foi possível salvar o resultado. Verifique se o arquivo não está aberto em outro programa."
+            self.after(0, lambda m=msg: self._on_error(m))
         except Exception as e:
             traceback.print_exc()
             msg = f"Erro inesperado durante o processamento:\n{type(e).__name__}: {e}"
             self.after(0, lambda m=msg: self._on_error(m))
         finally:
             self._running = False
+            if hasattr(self.master, "set_busy"):
+                self.after(0, lambda: self.master.set_busy(False))
 
     def _set_status(self, text: str, progress: float):
         """Atualiza status e barra de progresso de forma thread-safe."""

@@ -335,6 +335,19 @@ class SheetPanel(ctk.CTkFrame):
             filetypes=[("Excel / CSV", "*.xlsx *.xls *.csv"), ("Todos", "*.*")])
         if not path:
             return
+        # Detectar .xls e solicitar conversão
+        if path.lower().endswith(".xls"):
+            messagebox.showwarning(
+                "Formato não suportado — .xls",
+                "O arquivo selecionado está no formato antigo '.xls'.\n\n"
+                "Por favor:\n"
+                "  1. Abra o arquivo no Excel\n"
+                "  2. Clique em Arquivo → Salvar Como\n"
+                "  3. Escolha o formato 'Pasta de Trabalho do Excel (*.xlsx)'\n"
+                "  4. Salve e selecione o novo arquivo aqui.\n\n"
+                "O sistema aceita apenas arquivos .xlsx ou .csv."
+            )
+            return
         import os
         self._preview_lbl.configure(text=os.path.basename(path), text_color=_TEXT_NORMAL)
         try:
@@ -518,8 +531,21 @@ class ProfileScreen(ctk.CTkFrame):
         self._create_tabs()
 
     def _validate(self):
-        if not self._name_var.get().strip():
+        name = self._name_var.get().strip()
+        if not name:
             return "O nome do perfil não pode estar vazio."
+
+        # Caracteres proibidos no Windows para nomes de arquivo
+        invalid_chars = set('/\\|:*?"<>')
+        found = [c for c in name if c in invalid_chars]
+        if found:
+            chars_str = "  ".join(f"'{c}'" for c in sorted(set(found)))
+            return (
+                f"O nome do perfil contém caracteres inválidos: {chars_str}\n\n"
+                f"Esses caracteres não são permitidos em nomes de arquivo no Windows.\n"
+                f"Por favor, remova-os e tente novamente."
+            )
+
         for i, panel in enumerate(self._panels):
             cfg = panel.get_config()
             if not cfg["columns"]:
