@@ -287,12 +287,13 @@ def _build_match_result(a, b, pares, used_a, used_b, a_extra, b_extra) -> dict:
         ra = a.loc[idx_a].to_dict()
         rb = b.loc[idx_b].to_dict()
         rec = {}
+        _internal = lambda c: c.startswith('_') and not c.startswith('__')
         for k, v in ra.items():
-            if k.startswith('_'):
+            if _internal(k):
                 continue
             rec['__linha___a' if k == '__linha__' else k] = v
         for k, v in rb.items():
-            if k.startswith('_'):
+            if _internal(k):
                 continue
             if k == '__linha__':
                 rec['__linha___b'] = v
@@ -307,9 +308,11 @@ def _build_match_result(a, b, pares, used_a, used_b, a_extra, b_extra) -> dict:
     nao_a_idx = sorted(i for i in set(all_a_idx) if i not in used_a)
     nao_b_idx = sorted(i for i in set(all_b_idx) if i not in used_b)
 
-    # Reconstruir df originals sem colunas internas
-    orig_a = a.drop(columns=[c for c in a.columns if c.startswith('_')], errors='ignore')
-    orig_b = b.drop(columns=[c for c in b.columns if c.startswith('_')], errors='ignore')
+    # Reconstruir df originals sem colunas de trabalho internas (prefixo '_' simples)
+    # mas preservando '__linha__' que começa com '__' e é necessário para a saída
+    _internal = lambda c: c.startswith('_') and not c.startswith('__')
+    orig_a = a.drop(columns=[c for c in a.columns if _internal(c)], errors='ignore')
+    orig_b = b.drop(columns=[c for c in b.columns if _internal(c)], errors='ignore')
 
     nao_a = orig_a.loc[[i for i in nao_a_idx if i in orig_a.index]].copy()
     nao_b = orig_b.loc[[i for i in nao_b_idx if i in orig_b.index]].copy()

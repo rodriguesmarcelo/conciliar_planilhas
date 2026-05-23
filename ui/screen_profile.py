@@ -450,6 +450,33 @@ class ProfileScreen(ctk.CTkFrame):
                           font=ctk.CTkFont(size=12)).grid(
             row=2, column=1, padx=(0, 16), pady=(8, 14), sticky="w")
 
+        # Seção de Comparação
+        comp = ctk.CTkFrame(body, fg_color=_CARD_BG, corner_radius=10)
+        comp.pack(fill="x", padx=24, pady=(0, 8))
+        self._comp_section = comp
+        
+        ctk.CTkLabel(comp, text="Critérios de Comparação:", font=ctk.CTkFont(size=12, weight="bold")).grid(
+            row=0, column=0, padx=(16, 8), pady=(14, 4), sticky="w")
+        
+        self._match_vars = {}
+        fields_to_match = ["data", "valor", "numero_cheque", "numero_nota", "documento"]
+        
+        mf_frame = ctk.CTkFrame(comp, fg_color="transparent")
+        mf_frame.grid(row=1, column=0, columnspan=2, padx=16, pady=(0, 8), sticky="w")
+        
+        for f in fields_to_match:
+            var = tk.BooleanVar(value=False)
+            self._match_vars[f] = var
+            cb = ctk.CTkCheckBox(mf_frame, text=f.replace("_", " ").title(), variable=var,
+                                 font=ctk.CTkFont(size=11), fg_color=_ACCENT, hover_color=_ACCENT_HOVER)
+            cb.pack(side="left", padx=(0, 15))
+            
+        self._one_to_one_var = tk.BooleanVar(value=False)
+        ctk.CTkCheckBox(comp, text="Conciliação Um-para-Um (Recomendado para Cheques)", 
+                        variable=self._one_to_one_var,
+                        font=ctk.CTkFont(size=11), fg_color=_ACCENT, hover_color=_ACCENT_HOVER).grid(
+            row=2, column=0, columnspan=2, padx=16, pady=(0, 14), sticky="w")
+
         # Seção abas
         self._tabs_section = ctk.CTkFrame(body, fg_color=_CARD_BG, corner_radius=10)
         self._tabs_section.pack(fill="both", expand=True, padx=24, pady=(0, 8))
@@ -517,6 +544,10 @@ class ProfileScreen(ctk.CTkFrame):
                 b.configure(fg_color=_HEADER_BG, hover_color=_CARD_BG)
 
     def _on_mode_change(self):
+        if self._mode_var.get() == "single":
+            self._comp_section.pack_forget()
+        else:
+            self._comp_section.pack(after=self._body.winfo_children()[0], fill="x", padx=24, pady=(0, 8))
         self._create_tabs()
 
     def _prefill(self):
@@ -526,8 +557,17 @@ class ProfileScreen(ctk.CTkFrame):
         self._name_var.set(self._profile.get("name", ""))
         self._mode_var.set(self._profile.get("mode", "dual"))
         self._date_fmt_var.set(self._profile.get("date_format", "dd/mm/yyyy"))
+        
+        comp = self._profile.get("comparison", {})
+        mfs = comp.get("match_fields", [])
+        for f, var in self._match_vars.items():
+            var.set(f in mfs)
+        self._one_to_one_var.set(comp.get("one_to_one", False))
+
         if self.mode == "duplicate":
             self._name_var.set(f"Cópia de {self._profile.get('name','')}")
+        
+        self._on_mode_change() # Atualiza visibilidade da seção de comparação
         self._create_tabs()
 
     def _validate(self):
@@ -567,15 +607,8 @@ class ProfileScreen(ctk.CTkFrame):
         if mode == "single":
             comparison = {"enabled": False, "match_fields": [], "one_to_one": False}
         else:
-            fa = {c["field"] for c in sheets[0]["columns"]} if sheets else set()
-            fb = {c["field"] for c in sheets[1]["columns"]} if len(sheets) > 1 else set()
-            common = sorted(fa & fb)
-            if "numero_cheque" in common:
-                mf, oto = ["numero_cheque"], True
-            elif {"data", "valor"}.issubset(common):
-                mf, oto = ["data", "valor"], False
-            else:
-                mf, oto = (common[:1] if common else []), False
+            mf = [f for f, var in self._match_vars.items() if var.get()]
+            oto = self._one_to_one_var.get()
             comparison = {"enabled": True, "match_fields": mf, "one_to_one": oto}
 
         # Preservar output se editando perfil existente
