@@ -49,6 +49,13 @@ export type PreviewResult = {
   rows: string[][]
 }
 
+export type RunResult = {
+  mode: "dual" | "single"
+  counts: Record<string, number>
+  download_token: string
+  suggested_filename: string
+}
+
 export function listProfiles() {
   return apiGet<Profile[]>("/conciliador/profiles")
 }
@@ -73,4 +80,16 @@ export function preview(file: File) {
   const form = new FormData()
   form.append("file", file)
   return apiUpload<PreviewResult>("/conciliador/preview", form)
+}
+
+export function runReconciliation(id: string, fileA: File, fileB?: File) {
+  const form = new FormData()
+  form.append("file_a", fileA)
+  if (fileB) form.append("file_b", fileB)
+  return apiUpload<RunResult>(`/conciliador/run/${id}`, form)
+}
+
+// Mesmo-origem; o Content-Disposition do backend define o nome do arquivo.
+export function resultUrl(token: string) {
+  return `/api/conciliador/run/result/${token}`
 }
