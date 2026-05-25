@@ -1,5 +1,5 @@
 import type { ComponentType } from "react"
-import ConciliadorPlaceholder from "@/modules/conciliador/Placeholder"
+import ConciliadorModule from "@/modules/conciliador"
 
 export type FrontendModule = {
   id: string
@@ -17,7 +17,7 @@ export const MODULES: FrontendModule[] = [
     title: "Conciliador de Planilhas",
     icon: "file-spreadsheet",
     basePath: "/conciliador",
-    element: ConciliadorPlaceholder,
+    element: ConciliadorModule,
   },
 ]
 
