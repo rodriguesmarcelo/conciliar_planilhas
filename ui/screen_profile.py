@@ -7,6 +7,7 @@ from tkinter import filedialog, messagebox, ttk
 import customtkinter as ctk
 
 from core.profile_manager import load_profile, save_profile
+from core.profile_builder import build_default_output, build_comparison, validate_profile
 from core.reader import preview_sheet, InvalidFileError
 
 # ── Paleta ───────────────────────────────────────────────────────────────────
@@ -571,33 +572,8 @@ class ProfileScreen(ctk.CTkFrame):
         self._create_tabs()
 
     def _validate(self):
-        name = self._name_var.get().strip()
-        if not name:
-            return "O nome do perfil não pode estar vazio."
-
-        # Caracteres proibidos no Windows para nomes de arquivo
-        invalid_chars = set('/\\|:*?"<>')
-        found = [c for c in name if c in invalid_chars]
-        if found:
-            chars_str = "  ".join(f"'{c}'" for c in sorted(set(found)))
-            return (
-                f"O nome do perfil contém caracteres inválidos: {chars_str}\n\n"
-                f"Esses caracteres não são permitidos em nomes de arquivo no Windows.\n"
-                f"Por favor, remova-os e tente novamente."
-            )
-
-        for i, panel in enumerate(self._panels):
-            cfg = panel.get_config()
-            if not cfg["columns"]:
-                lbl = cfg.get("label") or f"Planilha {'A' if i==0 else 'B'}"
-                return f"A planilha '{lbl}' deve ter ao menos 1 campo configurado."
-            for col in cfg["columns"]:
-                try:
-                    if int(col["col_index"]) < 1:
-                        raise ValueError
-                except (ValueError, TypeError):
-                    return f"Índice de coluna inválido no campo '{col['field']}'."
-        return None
+        sheets = [p.get_config() for p in self._panels]
+        return validate_profile({"name": self._name_var.get(), "sheets": sheets})
 
     def _collect(self):
         import uuid
@@ -605,17 +581,17 @@ class ProfileScreen(ctk.CTkFrame):
         sheets = [p.get_config() for p in self._panels]
 
         if mode == "single":
-            comparison = {"enabled": False, "match_fields": [], "one_to_one": False}
+            comparison = build_comparison(mode)
         else:
             mf = [f for f, var in self._match_vars.items() if var.get()]
             oto = self._one_to_one_var.get()
-            comparison = {"enabled": True, "match_fields": mf, "one_to_one": oto}
+            comparison = build_comparison(mode, mf, oto)
 
         # Preservar output se editando perfil existente
         if self.mode == "edit" and self._profile.get("output"):
             output = self._profile["output"]
         else:
-            output = _default_output(mode, sheets)
+            output = build_default_output(mode, sheets)
 
         pid = self._profile.get("id", str(uuid.uuid4())) if self.mode == "edit" else str(uuid.uuid4())
 
@@ -638,32 +614,3 @@ class ProfileScreen(ctk.CTkFrame):
         save_profile(profile)
         messagebox.showinfo("Perfil salvo", f"Perfil '{profile['name']}' salvo com sucesso!")
         self.master.show_screen("home")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-def _default_output(mode, sheets):
-    if mode == "single":
-        cols = [{"header": c["field"].replace("_"," ").title(),
-                 "field": c["field"], "fixed_value": None}
-                for c in (sheets[0].get("columns",[]) if sheets else [])]
-        return {"tabs": [{"name": "Dados Normalizados", "source": "normalizados", "columns": cols}]}
-
-    la = sheets[0].get("label","A") if sheets else "A"
-    lb = sheets[1].get("label","B") if len(sheets)>1 else "B"
-
-    def _cols(sh):
-        return [{"header": c["field"].replace("_"," ").title(),
-                 "field": c["field"], "fixed_value": None}
-                for c in sh.get("columns",[])]
-
-    cc = _cols(sheets[0]) + [
-        {"header": f"Linha {la}", "field": "__linha___a", "fixed_value": None},
-        {"header": f"Linha {lb}", "field": "__linha___b", "fixed_value": None}]
-
-    return {"tabs": [
-        {"name": "Dados Conciliados",          "source": "conciliados",       "columns": cc},
-        {"name": f"Não Conciliados - {la}",    "source": "nao_conciliados_a",
-         "columns": _cols(sheets[0]) + [{"header": f"Linha {la}", "field": "__linha__", "fixed_value": None}]},
-        {"name": f"Não Conciliados - {lb}",    "source": "nao_conciliados_b",
-         "columns": _cols(sheets[1] if len(sheets)>1 else {}) + [{"header": f"Linha {lb}", "field": "__linha__", "fixed_value": None}]},
-    ]}

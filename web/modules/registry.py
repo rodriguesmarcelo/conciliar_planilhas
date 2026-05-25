@@ -28,9 +28,24 @@ class Module:
     router: APIRouter
 
 
-# Vazio nesta fase — o módulo Conciliador é registrado na Task 02.
 ALL_MODULES: list[Module] = []
 
 
 def get_manifests() -> list[ModuleManifest]:
     return [m.manifest for m in ALL_MODULES]
+
+
+# ── Registro dos módulos ───────────────────────────────────────────────────────
+from web.modules.conciliador.router import router as _conciliador_router  # noqa: E402
+
+ALL_MODULES.append(
+    Module(
+        manifest=ModuleManifest(
+            id="conciliador",
+            title="Conciliador de Planilhas",
+            description="Concilia e normaliza planilhas Excel/CSV por perfis configuráveis.",
+            icon="file-spreadsheet",
+        ),
+        router=_conciliador_router,
+    )
+)
