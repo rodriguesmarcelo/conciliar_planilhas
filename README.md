@@ -121,6 +121,41 @@ Copie `.env.example` para `.env` e ajuste se necessário (prefixo `BARELLI_`):
 Os arquivos temporários (uploads/resultados) ficam em `%TEMP%\barelli_automacao` e
 são limpos na inicialização e a cada 2 horas automaticamente.
 
+### Como adicionar um novo módulo
+
+A plataforma é plugável: um módulo novo aparece no Hub apenas sendo **registrado**,
+sem alterar o núcleo (`web/server.py`) nem o módulo Conciliador. São 2 pontos de
+toque no backend e 2 no frontend. Exemplo de um módulo "Olá Mundo":
+
+1. **Backend — router** (`web/modules/hello/router.py`):
+   ```python
+   from fastapi import APIRouter
+   router = APIRouter(prefix="/hello", tags=["hello"])
+
+   @router.get("/ping")
+   def ping() -> dict:
+       return {"message": "Olá, mundo!"}
+   ```
+2. **Backend — registro** (`web/modules/registry.py`): adicione ao final
+   ```python
+   from web.modules.hello.router import router as _hello_router
+   ALL_MODULES.append(Module(
+       manifest=ModuleManifest(id="hello", title="Olá Mundo",
+           description="Módulo de exemplo.", icon="layout-grid"),
+       router=_hello_router))
+   ```
+3. **Frontend — tela** (`web/frontend/src/modules/hello/index.tsx`): um componente
+   React exportado como `default` (pode conter suas próprias rotas, como
+   `modules/conciliador/index.tsx`).
+4. **Frontend — registro** (`web/frontend/src/modules/registry.ts`): uma entrada
+   em `MODULES` com `{ id, title, icon, basePath: "/hello", element: HelloModule }`.
+
+Pronto: o card surge no Hub e a navegação na sidebar é automática. O `icon` é um
+nome de [lucide-react](https://lucide.dev); ícones desconhecidos caem no padrão
+`LayoutGrid` — para um ícone próprio, registre-o em
+`web/frontend/src/components/AppIcon.tsx` (opcional). As rotas do módulo ficam sob
+`/api/<prefix>` (backend) e `/<basePath>` (frontend).
+
 ---
 
 ## Gerar Executável (.exe) — Windows
