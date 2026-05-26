@@ -53,6 +53,76 @@ python main.py
 
 ---
 
+## Plataforma Web (barelli.automacao)
+
+Além do app desktop, o mesmo `core/` é exposto numa plataforma web (FastAPI + SPA
+React) para uso na intranet — vários PCs acessam pelo navegador, sem instalar nada.
+
+### Pré-requisitos
+
+- **Python 3.10+** e **Node 18+** (apenas para gerar o build do frontend).
+
+### 1. Dependências do backend
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Build do frontend
+
+```bash
+cd web/frontend
+npm install
+npm run build      # gera web/frontend/dist
+cd ../..
+```
+
+### 3. Iniciar o servidor
+
+Na raiz do projeto:
+
+```bash
+python run_web.py
+```
+
+No Windows, basta dar duplo clique em **`iniciar_barelli_automacao.bat`** (ativa o
+`.venv`, se existir, e sobe o servidor). O FastAPI serve a SPA e a API no mesmo
+processo, em `0.0.0.0:8000`.
+
+> Sem o build (`web/frontend/dist`), o servidor sobe só com a API — para
+> desenvolvimento, rode o Vite à parte: `cd web/frontend && npm run dev` (porta
+> 5173, com proxy `/api` → 8000).
+
+### 4. Acesso na rede
+
+- No servidor, descubra o IP com `ipconfig` (ex.: `192.168.0.10`).
+- Em qualquer PC da intranet, abra `http://<ip-do-servidor>:8000`.
+- **Firewall do Windows:** libere a entrada na porta 8000 (sem isso, outros PCs
+  não conseguem acessar):
+
+  ```bat
+  netsh advfirewall firewall add rule name="barelli.automacao" dir=in action=allow protocol=TCP localport=8000
+  ```
+
+> Opcional: para subir no boot, cadastre o `.bat` no **Agendador de Tarefas** do
+> Windows (gatilho "Ao iniciar o computador").
+
+### Configuração (`.env`)
+
+Copie `.env.example` para `.env` e ajuste se necessário (prefixo `BARELLI_`):
+
+| Variável | Padrão | Descrição |
+|----------|--------|-----------|
+| `BARELLI_PORT` | `8000` | Porta do servidor web |
+| `BARELLI_AUTH_ENABLED` | `false` | Login (desativado nesta fase) |
+| `BARELLI_CORS_ORIGINS` | `["http://localhost:5173"]` | Origens liberadas no CORS (Vite dev) |
+| `BARELLI_DATA_DIR` | (vazio) | Pasta de dados/perfis; vazio = `profiles/` na raiz (compartilhada com o desktop) |
+
+Os arquivos temporários (uploads/resultados) ficam em `%TEMP%\barelli_automacao` e
+são limpos na inicialização e a cada 2 horas automaticamente.
+
+---
+
 ## Gerar Executável (.exe) — Windows
 
 ```bash
