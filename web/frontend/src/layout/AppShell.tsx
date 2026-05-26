@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet } from "react-router-dom"
 import { MODULES } from "@/modules/registry"
 import { AppIcon } from "@/components/AppIcon"
 import { cn } from "@/lib/utils"
+import logoBarelli from "@/assets/logo-barelli.png"
 
 export function AppShell() {
   return (
@@ -9,8 +10,11 @@ export function AppShell() {
       {/* Topbar */}
       <header className="fixed inset-x-0 top-0 z-20 flex h-14 items-center border-b bg-background px-4">
         <Link to="/" className="flex items-center gap-2 font-semibold">
-          {/* Placeholder do logo — a marca da Barelli entra na Task 07. */}
-          <div className="size-7 rounded-md bg-primary" />
+          <img
+            src={logoBarelli}
+            alt="Barelli"
+            className="size-7 object-contain"
+          />
           <span>barelli.automacao</span>
         </Link>
       </header>

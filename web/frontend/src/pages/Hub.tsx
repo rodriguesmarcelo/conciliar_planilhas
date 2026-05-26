@@ -29,7 +29,7 @@ export default function Hub() {
             <Link key={m.id} to={to}>
               <Card className="h-full transition-colors hover:border-primary hover:bg-accent/40">
                 <CardHeader>
-                  <div className="mb-2 flex size-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <div className="mb-2 flex size-10 items-center justify-center rounded-md bg-brand-accent/10 text-brand-accent">
                     <AppIcon name={m.icon} className="size-5" />
                   </div>
                   <CardTitle>{m.title}</CardTitle>
